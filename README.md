@@ -59,7 +59,7 @@ Warc files are saved to `files/warc-files`. Media content to `files/media/<app_i
 
 ### Export format
 
-In `steam_scraping/settings.py` you can modify everything related to the file in which the extracted data is stored:
+In `settings.py` you can modify everything related to the file in which the extracted data is stored:
 
 ```py
 FEEDS = {'data.jsonl': {  # name of file
