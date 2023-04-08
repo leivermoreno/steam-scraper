@@ -1,39 +1,43 @@
 from scrapy import Spider, Request
 from scrapy.http import TextResponse
 
-from steam_scraping.db import db
+from steam_scraping.db import db, filter_by_status, get_100_random
 from steam_scraping.items import AppLoader
-
-
-def filter_by_status(status: str, data: dict) -> bool:
-    if data['status'] == status:
-        return True
 
 
 class AppsSpider(Spider):
     name = "apps"
     allowed_domains = ['steampowered.com', 'steamstatic.com']
 
-    def __init__(self, status: str = 'pending', *args, **kwargs):
+    def __init__(self, testmode=None, retryfailed=None, retrypartial=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.status = status
+        self.test_mode = testmode
+        self.retry_failed = retryfailed
+        self.retry_partial = retrypartial
         self.db = db
 
     def start_requests(self):
-        statuses = ['pending', 'complete', 'failed', 'partial']
-        status = self.status
-        if status not in statuses:
-            raise ValueError(f'Status argument must be in {statuses}.')
+        get_by_status = False
+        if self.test_mode:
+            apps = get_100_random(db)
+        elif self.retry_failed:
+            get_by_status = 'failed'
+        elif self.retry_partial:
+            get_by_status = 'partial'
+        else:
+            get_by_status = 'pending'
 
-        apps = self.db.get_by_query(lambda data: filter_by_status(status, data))
+        if get_by_status:
+            apps = self.db.get_by_query(lambda data: filter_by_status(get_by_status, data))
 
         url = "https://store.steampowered.com/app/"
 
         for db_id, app in apps.items():
-            app_url = url + str(app["appid"])
+            app_id = app["appid"]
+            app_url = url + str(app_id)
 
             yield Request(app_url, callback=self.parse, errback=self.errback,
-                          cb_kwargs={'db_id': db_id, 'app_id': app['appid']})
+                          cb_kwargs={'db_id': db_id, 'app_id': app_id})
 
     def errback(self, failure):
         request = failure.request
