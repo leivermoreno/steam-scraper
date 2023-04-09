@@ -59,11 +59,18 @@ causing steam redirecting to the homepage.
 
 ## Storage
 
-Html is written to warc file only if response is in 200 range
+Html is written to warc file only if response is in 200 range.
 
 Extracted app data have the following fields:
 
-- app_id, game_title, publisher, developer, publish_date, tags, images_path, videos_path
+- app_id: int
+- game_title: str
+- publisher: str
+- developer: str
+- publish_date: float|str = timestamp|'Coming soon...'
+- tags: list
+- images_path: list
+- videos_path: list
 
 Warc files are saved to `files/warc-files`, media content to `files/media/<app_id>`
 
