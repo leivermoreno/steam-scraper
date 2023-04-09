@@ -15,6 +15,11 @@ class MyFilesPipeline(FilesPipeline):
         super().__init__(*args, **kwargs)
         self.db = db
         self.STORE_URI = args[0]
+        self.test_mode = None
+
+    def open_spider(self, spider):
+        self.test_mode = spider.test_mode
+        super().open_spider(spider)
 
     def file_path(self, request, response=None, info=None, *, item=None):
         adapter = ItemAdapter(item)
@@ -30,7 +35,7 @@ class MyFilesPipeline(FilesPipeline):
     def item_completed(self, results, item, info):
         adapter = ItemAdapter(item)
         all_ok = all([result[0] for result in results])
-        if all_ok:
+        if all_ok and self.test_mode is None:
             self.db.update_by_id(adapter['db_id'], {'status': 'complete'})
 
         images_path = []

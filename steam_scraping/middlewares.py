@@ -15,7 +15,8 @@ class WarcioDownloaderMiddleware:
     def process_response(self, request, response, spider):
         ok = 200 <= response.status < 300
         is_resource = request.meta.get('is_resource')
-        if ok and not is_resource:
+        test_mode = request.meta.get('test_mode')
+        if ok and not is_resource and not test_mode:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 self.warcio.write(response, request)

@@ -31,13 +31,16 @@ class AppsSpider(Spider):
             apps = self.db.get_by_query(lambda data: filter_by_status(get_by_status, data))
 
         url = "https://store.steampowered.com/app/"
+        meta = {}
+        if self.test_mode:
+            meta['test_mode'] = True
 
         for db_id, app in apps.items():
             app_id = app["appid"]
             app_url = url + str(app_id)
 
             yield Request(app_url, callback=self.parse, errback=self.errback,
-                          cb_kwargs={'db_id': db_id, 'app_id': app_id})
+                          cb_kwargs={'db_id': db_id, 'app_id': app_id}, meta=meta)
 
     def errback(self, failure):
         request = failure.request
@@ -79,7 +82,8 @@ class AppsSpider(Spider):
         return loader.load_item()
 
     def parse(self, response, db_id, app_id):
-        self.db.update_by_id(db_id, {'status': 'partial'})
+        if self.test_mode is None:
+            self.db.update_by_id(db_id, {'status': 'partial'})
 
         links = self.get_media_links(response)
         return self.load_item(response, app_id, db_id, links)
