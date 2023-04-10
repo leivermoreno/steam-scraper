@@ -8,7 +8,7 @@ Coded and tested on python version 3.11.2.
 
 Create and environment and run:
 
-`pip install -r requirements.py`
+`pip install -r requirements.txt`
 
 If you're on windows and have problems running the spider, run:
 
