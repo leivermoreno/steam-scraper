@@ -44,13 +44,15 @@ class AppsSpider(Spider):
 
     def errback(self, failure):
         request = failure.request
-        db_id = request.cb_kwargs['db_id']
+        cb_kwargs = request.cb_kwargs
+        db_id = cb_kwargs['db_id']
+        app_id = cb_kwargs['app_id']
         url = request.url
         err_msg = failure.getErrorMessage()
 
         self.db.update_by_id(db_id,
                              {'status': 'failed', 'err_msg': err_msg})
-        self.logger.info(f'{url} failed to be scraped: {err_msg}')
+        self.logger.warning(f'App {app_id}, url: {url} failed to be scraped: {err_msg}')
 
     def get_media_links(self, response: TextResponse):
         # preview media
@@ -72,11 +74,15 @@ class AppsSpider(Spider):
         loader = AppLoader(response=response)
         loader.add_value('app_id', app_id)
         loader.add_value('db_id', db_id)
+        loader.add_value('url', response.url)
         loader.add_css('game_title', '#appHubAppName::text')
         loader.add_css('publisher', '#game_highlights .dev_row+ .dev_row a::text')
         loader.add_css('developer', '#developers_list a::text')
         loader.add_css('publish_date', '.date::text')
         loader.add_css('tags', '#glanceCtnResponsiveRight a::text')
+        loader.add_css('review_count', '#review_type_all+ label .user_reviews_count::text')
+        loader.add_css('positive_review_count', '#review_type_positive+ label .user_reviews_count::text')
+        loader.add_css('negative_review_count', '#review_type_negative+ label .user_reviews_count::text')
         loader.add_value('file_urls', urls)
 
         return loader.load_item()

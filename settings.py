@@ -8,25 +8,36 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 import copy
+import logging
 import os
 
 import scrapy.utils.log
 from colorlog import ColoredFormatter
 
+# set the database to use
+JOBS_DB_NAME = 'small-apps-db.json'
+
 # modify here the name of output file
-FEEDS = {'data.jsonl': {
-    'format': 'jsonl',
-    'encoding': 'utf8',
-    'store_empty': True,
-    'fields': ['app_id', 'game_title', 'publisher', 'developer', 'publish_date', 'tags', 'images_path', 'videos_path'],
-    'indent': 4,
-    # whether overwrite or append
-    'overwrite': False
-}}
+# now handled with custom json pipeline
+# FEEDS = {'data.jsonl': {
+#     'format': 'jsonl',
+#     'encoding': 'utf8',
+#     'store_empty': True,
+#     'fields': ['app_id', 'url', 'game_title', 'publisher', 'developer', 'publish_date', 'tags', 'review_count',
+#                'positive_review_count', 'negative_review_count', 'images_path', 'videos_path'],
+#     'indent': 4,
+#     # whether overwrite or append
+#     'overwrite': False
+# }}
+
+# logging
+LOG_ENABLED = True
+LOG_LEVEL = 'INFO'
+DOWNLOAD_WARNSIZE = 0
 
 # creating files fodler
-os.makedirs('files/warc-files', exist_ok=True)
-os.makedirs('files/media', exist_ok=True)
+os.makedirs('output/warc-files', exist_ok=True)
+os.makedirs('output/apps', exist_ok=True)
 
 # set config file location of warcio in env variable
 os.environ['SCRAPY_WARCIO_SETTINGS'] = 'warcio-settings.yml'
@@ -36,7 +47,13 @@ BOT_NAME = "steam_scraping"
 SPIDER_MODULES = ["steam_scraping.spiders"]
 NEWSPIDER_MODULE = "steam_scraping.spiders"
 
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
+FAKEUSERAGENT_PROVIDERS = [
+    'scrapy_fake_useragent.providers.FakeUserAgentProvider',  # this is the first provider we'll try
+    'scrapy_fake_useragent.providers.FakerProvider',
+    # if FakeUserAgentProvider fails, we'll use faker to generate a user-agent string for us
+    'scrapy_fake_useragent.providers.FixedUserAgentProvider',  # fall back to USER_AGENT value
+]
+
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 ' \
              'Safari/537.36'
 
@@ -49,7 +66,7 @@ ROBOTSTXT_OBEY = True
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 2
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -95,7 +112,11 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "steam_scraping.middlewares.WarcioDownloaderMiddleware": 80
+    "steam_scraping.middlewares.WarcioDownloaderMiddleware": 80,
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
+    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 500,
+    'scrapy_fake_useragent.middleware.RetryUserAgentMiddleware': 550,
 }
 
 # Enable or disable extensions
@@ -107,9 +128,12 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'steam_scraping.pipelines.MyFilesPipeline': 1
+    'steam_scraping.pipelines.MyFilesPipeline': 10,
+    'steam_scraping.pipelines.SetDefaultPipeline': 20,
+    'steam_scraping.pipelines.SaveItemAsJSONPipeline': 100,
+
 }
-FILES_STORE = 'files/media'
+FILES_STORE = 'output/apps'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -120,7 +144,7 @@ AUTOTHROTTLE_START_DELAY = 2
 # AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 2.0
+# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -136,6 +160,18 @@ AUTOTHROTTLE_DEBUG = True
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# logging config
+
+logging.getLogger('scrapy_warcio.warcio').setLevel('WARNING')
+
+apps_logger = logging.getLogger('apps')
+apps_logger.setLevel('WARNING')
+apps_logger.propagate = True
+apps_file_handler = logging.FileHandler('output/error_logs.log', 'a', 'utf-8')
+apps_file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s')
+apps_file_handler.setFormatter(apps_file_formatter)
+apps_logger.addHandler(apps_file_handler)
 
 # coloring scrapy output
 color_formatter = ColoredFormatter(

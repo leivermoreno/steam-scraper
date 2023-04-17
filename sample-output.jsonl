@@ -1,0 +1,37 @@
+{
+  "app_id": 766300,
+  "url": "https://store.steampowered.com/app/766300/Mazetools_Soniface_Lab/",
+  "game_title": "Mazetools Soniface Lab",
+  "publisher": "Ectoplastic UG",
+  "developer": "Stephan Kloss",
+  "publish_date": "Mar 28, 2018",
+  "tags": [
+    "Audio Production",
+    "Design & Illustration",
+    "Animation & Modeling",
+    "Music",
+    "Relaxing",
+    "Music-Based Procedural Generation"
+  ],
+  "review_count": 5,
+  "positive_review_count": 5,
+  "negative_review_count": 0,
+  "images_path": [
+    "files/media/766300/header.jpg",
+    "files/media/766300/ss_91a9cfd7baf6c44cab6b15f6562a9928b01d47ed.1920x1080.jpg",
+    "files/media/766300/ss_3f8c36be09872f76b568415c812be4da86d55df0.1920x1080.jpg",
+    "files/media/766300/ss_e3c8536c16c155df27fce78fc7c87c7cfb2370a7.1920x1080.jpg",
+    "files/media/766300/ss_17ae350ee0acafe916499bb571f3ef7242d82da9.1920x1080.jpg",
+    "files/media/766300/ss_28d242da2cbc576496e8171ffa0f561f5d09f28f.1920x1080.jpg",
+    "files/media/766300/ss_366b00bfe14a7db011d052ae748af41972081942.1920x1080.jpg",
+    "files/media/766300/ss_a8878adb4e2bd624ed82a96249520eb56c605dfe.1920x1080.jpg",
+    "files/media/766300/ss_aeb1f3ab150f8481a8b845e44a531b934a809a42.1920x1080.jpg",
+    "files/media/766300/ss_9b579a4640fb518f48c8bdc317ab2d903949d309.1920x1080.jpg",
+    "files/media/766300/ss_dbe04ec51b43105cc5d1447342dfcae154d7a129.1920x1080.jpg",
+    "files/media/766300/ss_173aebe123fac2021611edfc42b58f341652a44e.1920x1080.jpg",
+    "files/media/766300/ss_d2583d8b3870801d65cb34dad0898185bf56d8ee.1920x1080.jpg",
+    "files/media/766300/ss_4c200102aabb482562fd206d61e01d88e3472ef5.1920x1080.jpg",
+    "files/media/766300/ss_48d8d7171248d7c872800d2e6bda93b61ce34a1e.1920x1080.jpg"
+  ],
+  "videos_path": []
+}
