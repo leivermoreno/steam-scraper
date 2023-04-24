@@ -14,6 +14,9 @@ import os
 import scrapy.utils.log
 from colorlog import ColoredFormatter
 
+# whether to download videos or gif
+DOWNLOAD_VIDEOS = False
+
 # set the database to use
 JOBS_DB_NAME = "small-apps-db.json"
 
